@@ -9,9 +9,18 @@ const client = new Client({
   ],
 });
 
-client.once('ready', () => {
-  console.log(`Logged in as ${client.user.tag}`);
-  require('./server')(client); // Start the Express server with bot instance
-});
+async function startBot() {
+  await client.login(process.env.BOT_TOKEN);
 
-client.login(process.env.BOT_TOKEN);
+  // Wait until the bot is truly ready
+  await new Promise((resolve) => {
+    client.once('ready', () => {
+      console.log(`Logged in as ${client.user.tag}`);
+      resolve();
+    });
+  });
+
+  require('./server')(client); // Start express only after login + ready
+}
+
+startBot();
