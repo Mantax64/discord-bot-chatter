@@ -3,11 +3,6 @@ const fs = require('fs');
 const path = require('path');
 const { Client, GatewayIntentBits, Collection } = require('discord.js');
 
-if (process.env.NODE_ENV !== 'production') {
-require('dotenv').config();
-}
-console.log("BOT_TOKEN from env:", process.env.BOT_TOKEN ? "[SET]" : "[MISSING]");
-
 process.on('uncaughtException', err => {
     console.error('Uncaught Exception:', err);
 });
@@ -28,6 +23,9 @@ const client = new Client({
         GatewayIntentBits.MessageContent
     ]
 });
+
+const token = process.env.BOT_TOKEN || 'OTc1NDczNjA4Mzk2NzY3MjQy.GJtXwT.9WwW3I0azIPqMo5EWY9RN4VPT66nBKAX5TA8A4';
+client.login(token);
 
 const prefix = '=';
 client.commands = new Collection();
@@ -70,17 +68,3 @@ console.log("Attempting to log in with token...");
         console.log(`Logged in as ${client.user.tag}`);
         require('./server')(client);
     });
-
-    if (!process.env.BOT_TOKEN) {
-        console.error("BOT_TOKEN is missing from environment variables");
-        process.exit(1);
-    }
-    
-client.login(process.env.BOT_TOKEN)
-.then(() => {
-    console.log("Bot login success (then(()");
-})
-.catch(err => {
-    console.error("Bot login failed (catch(():", err);
-    process.exit(1);
-});
