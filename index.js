@@ -1,11 +1,11 @@
-const express = require('express');
+//const express = require('express');
 const fs = require('fs');
 const path = require('path');
 const { Client, GatewayIntentBits, Collection } = require('discord.js');
 require('dotenv').config();
 
-const app = express();
-const port = process.env.PORT || 3000;
+//const app = express();
+//const port = process.env.PORT || 3000;
 
 const client = new Client({
     intents: [
@@ -50,6 +50,7 @@ client.on('messageCreate', async (message) => {
   }
 });
 
+/*
 app.get('/', (req, res) => {
     res.send('Bot server is running!');
 });
@@ -57,6 +58,7 @@ app.get('/', (req, res) => {
 app.listen(port, () => {
     console.log(`Web server listening on port ${port}`);
 });
+*/
 
 client.once('ready', () => {
     console.log(`Logged in as ${client.user.tag}`);

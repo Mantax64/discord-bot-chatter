@@ -4,6 +4,7 @@ const path = require('path');
 const app = express();
 
 app.use(express.json());
+console.log("Static file server enabled. Looking for public/index.html");
 app.use(express.static(path.join(__dirname, 'public')));
 
 module.exports = (client) => {
@@ -55,6 +56,10 @@ module.exports = (client) => {
     }
   });
 
-  const port = process.env.PORT || 10000;
+  app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+  });
+
+  const port = process.env.PORT || 3000;
   app.listen(port, () => console.log(`Web server running on port ${port}`));
 };
