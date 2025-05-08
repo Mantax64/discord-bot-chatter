@@ -12,27 +12,30 @@ const CHANNELS = {
 
 module.exports = (client) => {
   // Serve available channels
-  app.get('/channels', (req, res) => {
-    res.json(Object.entries(CHANNELS).map(([id, name]) => ({ id, name })));
-  });
-
-  // Send a message to a channel
-  app.post('/send-message', async (req, res) => {
-    const { channelId, username, message } = req.body;
-
-    if (!channelId || !username || !message)
-      return res.status(400).json({ error: 'Missing fields' });
-
+  app.get('/history/:channelId', async (req, res) => {
+    const channelId = req.params.channelId;
+  
+    if (!CHANNELS[channelId])
+      return res.status(404).json({ error: 'Invalid channel ID' });
+  
+    if (!client.isReady()) {
+      return res.status(503).json({ error: 'Bot not ready yet' });
+    }
+  
     try {
       const channel = await client.channels.fetch(channelId);
       if (!channel.isTextBased())
-        return res.status(400).json({ error: 'Channel is not text-based' });
-
-      await channel.send(`**${username}**: ${message}`);
-      res.json({ success: true });
+        return res.status(400).json({ error: 'Not a text channel' });
+  
+      const messages = await channel.messages.fetch({ limit: 10 });
+      const history = Array.from(messages.values())
+        .reverse()
+        .map((msg) => msg.content);
+  
+      res.json(history);
     } catch (err) {
       console.error(err);
-      res.status(500).json({ error: 'Failed to send message' });
+      res.status(500).json({ error: 'Failed to get messages' });
     }
   });
 
