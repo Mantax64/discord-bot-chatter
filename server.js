@@ -19,6 +19,7 @@ module.exports = (client) => {
 
     try {
       // This will throw the exact "Expected token" error if REST not ready
+      console.log('Using REST token:', client.rest.token ? '[SET]' : '[NOT SET]');
       const channel = await client.channels.fetch(channelId);
       if (!channel.isTextBased())
         return res.status(400).json({ error: 'Not a text channel' });
@@ -62,4 +63,4 @@ module.exports = (client) => {
 
   const port = process.env.PORT || 3000;
   app.listen(port, () => console.log(`Web server running on port ${port}`));
-};
+

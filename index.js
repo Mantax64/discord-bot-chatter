@@ -1,4 +1,4 @@
-const { Client, GatewayIntentBits } = require('discord.js');
+const { Client, GatewayIntentBits, REST } = require('discord.js');
 require('dotenv').config();
 
 const client = new Client({
@@ -10,17 +10,26 @@ const client = new Client({
 });
 
 async function startBot() {
-  await client.login(process.env.BOT_TOKEN);
+  const token = process.env.BOT_TOKEN;
 
-  // Wait until the bot is truly ready
+  if (!token) {
+    console.error('❌ BOT_TOKEN not set!');
+    process.exit(1);
+  }
+
+  // Set token manually on REST just in case
+  client.rest.setToken(token);
+
+  await client.login(token);
+
   await new Promise((resolve) => {
     client.once('ready', () => {
-      console.log(`Logged in as ${client.user.tag}`);
+      console.log(`✅ Logged in as ${client.user.tag}`);
       resolve();
     });
   });
 
-  require('./server')(client); // Start express only after login + ready
+  require('./server')(client);
 }
 
 startBot();
