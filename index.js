@@ -1,35 +1,34 @@
-const { Client, GatewayIntentBits, REST } = require('discord.js');
+// index.js
 require('dotenv').config();
+const { Client, GatewayIntentBits } = require('discord.js');
 
-const client = new Client({
-  intents: [
-    GatewayIntentBits.Guilds,
-    GatewayIntentBits.GuildMessages,
-    GatewayIntentBits.MessageContent,
-  ],
-});
-
-async function startBot() {
+function startBot() {
   const token = process.env.BOT_TOKEN;
 
+console.log('[DEBUG] BOT_TOKEN is:', process.env.BOT_TOKEN ? 'Present' : 'Missing');
+console.log('[DEBUG] Executing from:', require.main === module ? 'Runtime' : 'Import context');
+
   if (!token) {
-    console.error('❌ BOT_TOKEN not set!');
+    console.error('BOT_TOKEN is missing. Exiting.');
     process.exit(1);
   }
 
-  // Set token manually on REST just in case
-  client.rest.setToken(token);
-
-  await client.login(token);
-
-  await new Promise((resolve) => {
-    client.once('ready', () => {
-      console.log(`✅ Logged in as ${client.user.tag}`);
-      resolve();
-    });
+  const client = new Client({
+    intents: [
+      GatewayIntentBits.Guilds,
+      GatewayIntentBits.GuildMessages,
+      GatewayIntentBits.MessageContent,
+    ],
   });
 
-  require('./server')(client);
+  client.once('ready', () => {
+    console.log(`Bot logged in as ${client.user.tag}`);
+    require('./server')(client); // Start Express after login
+  });
+
+  client.login(token);
 }
 
-startBot();
+if (require.main === module) {
+  startBot(); // Only run if file is executed directly
+}
