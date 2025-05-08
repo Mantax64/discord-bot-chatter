@@ -1,8 +1,9 @@
-console.log("SERVER.JS IS RUNNING");
-require('dotenv').config();
 const express = require('express');
 const path = require('path');
 const app = express();
+require('dotenv').config();
+
+console.log("SERVER.JS IS RUNNING");
 
 app.use(express.json());
 console.log("Static file server enabled. Looking for public/index.html");

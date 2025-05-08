@@ -4,6 +4,16 @@ const path = require('path');
 const { Client, GatewayIntentBits, Collection } = require('discord.js');
 require('dotenv').config();
 
+process.on('uncaughtException', err => {
+    console.error('Uncaught Exception:', err);
+});
+
+process.on('unhandledRejection', err => {
+    console.error('Unhandled Rejection:', err);
+});
+
+Console.log("INDEX.JS STARTED"); //confirm execution
+
 //const app = express();
 //const port = process.env.PORT || 3000;
 
