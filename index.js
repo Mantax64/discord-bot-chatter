@@ -66,9 +66,25 @@ client.login(process.env.BOT_TOKEN).then(() => {
     console.error("BOT LOGIN FAILED", err);
 });
 
-  client.once('ready', () => {
-    console.log(`Logged in as ${client.user.tag}`);
+if (!process.env.BOT_TOKEN) {
+    console.error("BOT_TOKEN is missing from environment variables");
+    process.exit(1);
+}
 
-  // Start the Express server *after* bot is ready
-    require('./server')(client);
-});
+console.log("Attempting to log in with token...");
+
+client.login(process.env.BOT_TOKEN)
+    .then(() => {
+        console.log("Bot login success (then(()");
+    })
+    .catch(err => {
+        console.error("Bot login failed (catch(():", err);
+        process.exit(1);
+    });
+
+    client.once('ready', () => {
+        console.log(`Logged in as ${client.user.tag}`);
+    
+      // Start the Express server *after* bot is ready
+        require('./server')(client);
+    });
