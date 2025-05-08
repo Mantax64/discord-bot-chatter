@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Send Message to Discord</title>
+</head>
+<body style="font-family: sans-serif; display: flex; flex-direction: column; align-items: center; margin-top: 50px;">
+  <h2>Send a Message to Discord</h2>
+
+  <label for="username">Your Name:</label>
+  <input type="text" id="username" placeholder="e.g., Alphanox" /><br><br>
+
+  <label for="channel">Select Channel:</label>
+  <select id="channel">
+    <option value="1160738866576228463">Gangest Chat</option>
+    <option value="551224607688884261">Debug</option>
+  </select><br><br>
+
+  <label for="message">Your Message:</label><br>
+  <textarea id="message" rows="5" cols="40" placeholder="Type your message..."></textarea><br>
+
+  <button onclick="sendMessage()">Send</button>
+
+  <p id="response" style="margin-top: 10px;"></p>
+  
+  <h3>Channel Chat</h3>
+<div id="chat-box" style="border: 1px solid #ccc; width: 400px; height: 300px; overflow-y: auto; padding: 10px; margin-top: 10px; white-space: pre-wrap; background: #f9f9f9;">
+  Loading chat...
+</div>
+
+  <script>
+    let selectedChannel = document.getElementById('channel').value;
+  
+    document.getElementById('channel').addEventListener('change', () => {
+      selectedChannel = document.getElementById('channel').value;
+      fetchMessages(); // Update chat box on channel switch
+    });
+  
+    async function sendMessage() {
+      const username = document.getElementById('username').value.trim();
+      const message = document.getElementById('message').value.trim();
+      const responseBox = document.getElementById('response');
+  
+      if (!username || !message) {
+        responseBox.innerText = 'Please enter your name and a message.';
+        return;
+      }
+  
+      const response = await fetch('/send-message', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'auth': 'mySecretKey'
+        },
+        body: JSON.stringify({
+          username,
+          message,
+          channelId: selectedChannel
+        })
+      });
+  
+      const data = await response.json();
+      responseBox.innerText = data.success ? 'Message sent!' : `Error: ${data.error}`;
+  
+      document.getElementById('message').value = '';
+      if (data.success) fetchMessages(); // refresh immediately
+    }
+  
+    async function fetchMessages() {
+      const chatBox = document.getElementById('chat-box');
+      chatBox.innerText = 'Loading...';
+  
+      const res = await fetch(`/channel-messages?channelId=${selectedChannel}`);
+      const data = await res.json();
+  
+      if (!data.success) {
+        chatBox.innerText = 'Failed to load messages.';
+        return;
+      }
+  
+      chatBox.innerText = data.messages.map(m =>
+        `[${new Date(m.timestamp).toLocaleTimeString()}] ${m.author}: ${m.content}`
+      ).join('\n');
+    }
+  
+    // Auto-refresh every 10 seconds
+    setInterval(fetchMessages, 10000);
+  
+    // Initial fetch
+    fetchMessages();
+  </script>
+</body>
+</html>
