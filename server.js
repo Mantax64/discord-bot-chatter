@@ -1,75 +1,65 @@
-require('dotenv').config();
 const express = require('express');
 const path = require('path');
+const app = express();
+
+app.use(express.json());
+app.use(express.static(path.join(__dirname, 'public')));
+
+const CHANNELS = {
+  '1160738866576228463': 'Gangest Chat',
+  '1368989906843471962': 'Mod Team',
+};
 
 module.exports = (client) => {
-  try {
-    const app = express();
-    const port = process.env.PORT || 3000;
+  // Serve available channels
+  app.get('/channels', (req, res) => {
+    res.json(Object.entries(CHANNELS).map(([id, name]) => ({ id, name })));
+  });
 
-    app.use(express.json());
-    console.log("Static file server enabled. Looking for public/index.html");
-    app.use(express.static(path.join(__dirname, 'public')));
+  // Send a message to a channel
+  app.post('/send-message', async (req, res) => {
+    const { channelId, username, message } = req.body;
 
-    // POST: send a message
-    app.post('/send-message', async (req, res) => {
-      const { username, message, channelId } = req.body;
+    if (!channelId || !username || !message)
+      return res.status(400).json({ error: 'Missing fields' });
 
-      if (!username || !message || !channelId) {
-        return res.status(400).json({ error: 'Missing username, message, or channelId' });
-      }
+    try {
+      const channel = await client.channels.fetch(channelId);
+      if (!channel.isTextBased())
+        return res.status(400).json({ error: 'Channel is not text-based' });
 
-      try {
-        const channel = await client.channels.fetch(channelId);
-        if (!channel || !channel.isTextBased()) {
-          return res.status(404).json({ error: 'Invalid or non-text channel' });
-        }
+      await channel.send(`**${username}**: ${message}`);
+      res.json({ success: true });
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ error: 'Failed to send message' });
+    }
+  });
 
-        const finalMessage = `**${username}**: ${message}`;
-        await channel.send(finalMessage);
-        res.json({ success: true });
-      } catch (err) {
-        console.error(err);
-        res.status(500).json({ error: 'Failed to send message' });
-      }
-    });
+  // Get last 10 messages from a channel
+  app.get('/history/:channelId', async (req, res) => {
+    const channelId = req.params.channelId;
 
-    // GET: fetch recent messages
-    app.get('/channel-messages', async (req, res) => {
-      const channelId = req.query.channelId;
-      if (!channelId) return res.status(400).json({ error: 'Missing channelId' });
+    if (!CHANNELS[channelId])
+      return res.status(404).json({ error: 'Invalid channel ID' });
 
-      try {
-        const channel = await client.channels.fetch(channelId);
-        if (!channel || !channel.isTextBased()) {
-          return res.status(404).json({ error: 'Invalid or non-text channel' });
-        }
+    try {
+      const channel = await client.channels.fetch(channelId);
+      if (!channel.isTextBased())
+        return res.status(400).json({ error: 'Not a text channel' });
 
-        const fetched = await channel.messages.fetch({ limit: 10 });
-        const messages = fetched.map(msg => ({
-          author: msg.author.username,
-          content: msg.content,
-          timestamp: msg.createdAt
-        })).reverse();
+      const messages = await channel.messages.fetch({ limit: 10 });
+      const history = Array.from(messages.values())
+        .reverse()
+        .map((msg) => msg.content);
 
-        res.json({ success: true, messages });
-      } catch (err) {
-        console.error(err);
-        res.status(500).json({ error: 'Failed to fetch messages' });
-      }
-    });
+      res.json(history);
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ error: 'Failed to get messages' });
+    }
+  });
 
-    // Root: serve the HTML file
-    app.get('/', (req, res) => {
-      res.sendFile(path.join(__dirname, 'public', 'index.html'));
-    });
-
-    // ✅ Start the server after everything is defined
-    app.listen(port, '0.0.0.0', () => {
-      console.log(`Web server running on port ${port}`);
-    });
-
-  } catch (err) {
-    console.error("Error inside server.js:", err);
-  }
+  const port = process.env.PORT || 3000;
+  app.listen(port, () => console.log(`Web server running on port ${port}`));
 };
