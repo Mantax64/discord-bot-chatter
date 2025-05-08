@@ -60,19 +60,11 @@ client.on('messageCreate', async (message) => {
   }
 });
 
-/*
-app.get('/', (req, res) => {
-    res.send('Bot server is running!');
+client.login(process.env.BOT_TOKEN).then(() => {
+    console.log("Login successful.");
+}).catch(err=> {
+    console.error("BOT LOGIN FAILED", err);
 });
-
-app.listen(port, () => {
-    console.log(`Web server listening on port ${port}`);
-});
-*/
-
-client.login(process.env.BOT_TOKEN).catch(err => {
-    console.error("Bot login failed:", err);
-  });
 
   client.once('ready', () => {
     console.log(`Logged in as ${client.user.tag}`);
