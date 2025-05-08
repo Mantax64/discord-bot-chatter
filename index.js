@@ -2,7 +2,11 @@
 const fs = require('fs');
 const path = require('path');
 const { Client, GatewayIntentBits, Collection } = require('discord.js');
+
+if (process.env.NODE_ENV !== 'production') {
 require('dotenv').config();
+}
+console.log("BOT_TOKEN from env:", process.env.BOT_TOKEN ? "[SET]" : "[MISSING]");
 
 process.on('uncaughtException', err => {
     console.error('Uncaught Exception:', err);
