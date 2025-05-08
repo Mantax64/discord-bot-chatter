@@ -61,5 +61,6 @@ module.exports = (client) => {
   });
 
   const port = process.env.PORT || 3000;
-  app.listen(port, () => console.log(`Web server running on port ${port}`));
-};
+  app.listen(port, '0.0.0.0', () => {
+    console.log(`Web server running on port ${port}`);
+  });
