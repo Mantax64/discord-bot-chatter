@@ -60,11 +60,13 @@ app.listen(port, () => {
 });
 */
 
-client.once('ready', () => {
+client.login(process.env.BOT_TOKEN).catch(err => {
+    console.error("Bot login failed:", err);
+  });
+
+  client.once('ready', () => {
     console.log(`Logged in as ${client.user.tag}`);
 
   // Start the Express server *after* bot is ready
     require('./server')(client);
 });
-
-client.login(process.env.BOT_TOKEN);
